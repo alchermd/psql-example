@@ -61,7 +61,7 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handler for storing new users.
 // Wraps the expect function signature in order to accept a database instance
-func StoreUserHandler(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+func StoreUserHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         u := User{
             Username:  r.FormValue("username"),
@@ -81,7 +81,7 @@ func StoreUserHandler(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 // Handler for displaying all the users.
 // Wraps the expect function signature in order to accept a database instance
-func UsersIndexHandler(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+func UsersIndexHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         users, err := GetAllUsers(db)
         if err != nil {
