@@ -9,9 +9,9 @@ import _ "github.com/lib/pq"
 
 // Create a new data type to represent a "User" within our system
 type user struct {
-	id int
-	username string
-	password string
+	id        int
+	username  string
+	password  string
 	createdAt time.Time
 }
 
@@ -32,28 +32,28 @@ func main() {
 	}
 
 	_, err = CreateUsersTable(db)
-    if err != nil {
-    	log.Fatal(err)
-    }   
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    john := user {
-    	username: "johdoe",
-    	password: "secret",
-    	createdAt: time.Now(),
-    }
+	john := user{
+		username:  "johdoe",
+		password:  "secret",
+		createdAt: time.Now(),
+	}
 
-    _, err = CreateUser(db, john)
-    if err != nil {
-    	log.Fatal(err)
-    }
-    log.Print(john)
+	_, err = CreateUser(db, john)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print(john)
 
-    users, err := GetAllUsers(db)
-    if err != nil {
-    	log.Fatal(err)
-    }
+	users, err := GetAllUsers(db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    log.Print(users)
+	log.Print(users)
 }
 
 // Opens a postgresql connection and returns a pointer to a new database instance
@@ -71,7 +71,7 @@ func CreateUsersTable(db *sql.DB) (sql.Result, error) {
 	        created_at TIMESTAMP
 	    );
     `
-    return db.Exec(query)
+	return db.Exec(query)
 }
 
 // Inserts a new row using the information from the provided user instance
@@ -83,21 +83,21 @@ func CreateUser(db *sql.DB, u user) (sql.Result, error) {
 // Fetches all users and returns then as an array
 func GetAllUsers(db *sql.DB) ([]user, error) {
 	rows, err := db.Query(`SELECT * FROM users`)
-    if err != nil {
-    	log.Fatal(err)
-    }    
-    defer rows.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
 
-    var users []user
-    for rows.Next() {
-    	var u user
-    	err = rows.Scan(&u.id, &u.username, &u.password, &u.createdAt)
-    	if err != nil {
-    		log.Fatal(err)
-    	}
-    	users = append(users, u)
-    }
-    err = rows.Err()
-    
-    return users, err
+	var users []user
+	for rows.Next() {
+		var u user
+		err = rows.Scan(&u.id, &u.username, &u.password, &u.createdAt)
+		if err != nil {
+			log.Fatal(err)
+		}
+		users = append(users, u)
+	}
+	err = rows.Err()
+
+	return users, err
 }
