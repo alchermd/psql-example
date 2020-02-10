@@ -10,6 +10,10 @@ import _ "github.com/lib/pq"
 import "github.com/gorilla/mux"
 import "html/template"
 
+var (
+    db *sql.DB
+)
+
 // Create a new data type to represent a "User" within our system
 type User struct {
     Id        int
@@ -33,20 +37,21 @@ func main() {
         port=5432 
         host=/var/run/postgresql
     `
-    db, err := GetDb(connString)
+    var err error
+    db, err = GetDb(connString)
     if err != nil {
         log.Fatal(err)
     }
 
-    _, err = CreateUsersTable(db)
+    _, err = CreateUsersTable()
     if err != nil {
         log.Fatal(err)
     }
 
     r := mux.NewRouter()
     r.HandleFunc("/", HomePageHandler).Methods("GET")
-    r.HandleFunc("/users", UsersIndexHandler(db)).Methods("GET")
-    r.HandleFunc("/users", StoreUserHandler(db)).Methods("POST")
+    r.HandleFunc("/users", UsersIndexHandler).Methods("GET")
+    r.HandleFunc("/users", StoreUserHandler).Methods("POST")
     r.HandleFunc("/users/new", CreateUserHandler).Methods("GET")
 
     log.Print("Starting server")
@@ -61,38 +66,34 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handler for storing new users.
 // Wraps the expect function signature in order to accept a database instance
-func StoreUserHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        u := User{
-            Username:  r.FormValue("username"),
-            Password:  r.FormValue("password"),
-            CreatedAt: time.Now(),
-        }
-
-        _, err := CreateUser(db, u)
-
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        http.Redirect(w, r, "/users", 302)
+func StoreUserHandler(w http.ResponseWriter, r *http.Request) {
+    u := User{
+        Username:  r.FormValue("username"),
+        Password:  r.FormValue("password"),
+        CreatedAt: time.Now(),
     }
+
+    _, err := CreateUser(u)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    http.Redirect(w, r, "/users", 302)
 }
 
 // Handler for displaying all the users.
 // Wraps the expect function signature in order to accept a database instance
-func UsersIndexHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        users, err := GetAllUsers(db)
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        usersIndexView := template.Must(template.ParseFiles("views/users/index.html"))
-        usersIndexView.Execute(w, UsersIndexData{
-            Users: users,
-        })
+func UsersIndexHandler(w http.ResponseWriter, r *http.Request) {
+    users, err := GetAllUsers()
+    if err != nil {
+        log.Fatal(err)
     }
+
+    usersIndexView := template.Must(template.ParseFiles("views/users/index.html"))
+    usersIndexView.Execute(w, UsersIndexData{
+        Users: users,
+    })
 }
 
 // Handler for showing the form for creating a new user
@@ -107,7 +108,7 @@ func GetDb(connString string) (*sql.DB, error) {
 }
 
 // Creates a users table if it doesn't exist yet
-func CreateUsersTable(db *sql.DB) (sql.Result, error) {
+func CreateUsersTable() (sql.Result, error) {
     query := `
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -120,13 +121,13 @@ func CreateUsersTable(db *sql.DB) (sql.Result, error) {
 }
 
 // Inserts a new row using the information from the provided user instance
-func CreateUser(db *sql.DB, u User) (sql.Result, error) {
+func CreateUser(u User) (sql.Result, error) {
     query := `INSERT INTO users(username, password, created_at) VALUES($1, $2, $3);`
     return db.Exec(query, u.Username, u.Password, u.CreatedAt.Format("01-02-2006 15:04:05"))
 }
 
 // Fetches all users and returns then as an array
-func GetAllUsers(db *sql.DB) ([]User, error) {
+func GetAllUsers() ([]User, error) {
     rows, err := db.Query(`SELECT * FROM users`)
     if err != nil {
         log.Fatal(err)
