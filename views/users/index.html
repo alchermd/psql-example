@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>All Users</title>
+</head>
+<body>
+	<h2>All Users (<a href="/users/new">create a new one</a>)</h2>
+	{{ if .Users }}
+		<table border="1">
+			<thead>
+				<th>Username</th>
+				<th>Password</th>
+				<th>Created At</th>
+			</thead>
+			<tbody>
+				{{ range .Users }}
+				<tr>
+					<td>{{ .Username }}</td>
+					<td>{{ .Password }}</td>
+					<td>{{ .CreatedAt }}</td>
+				</tr>
+				{{ end }}
+			</tbody>
+		</ul>
+	{{ end }}
+</body>
+</html>
