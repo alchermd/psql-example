@@ -26,13 +26,13 @@ func main() {
 	// This program assumes that a database named 'example' is already created.
 	// Replace the ??? part in the connection string below with your proper database credentials
 	connString := `
-		user=???
-		password=??? 
-		dbname=example 
-		sslmode=disable 
-		port=5432 
-		host=/var/run/postgresql
-	`
+        user=???
+        password=??? 
+        dbname=example 
+        sslmode=disable 
+        port=5432 
+        host=/var/run/postgresql
+    `
 	db, err := GetDb(connString)
 	if err != nil {
 		log.Fatal(err)
@@ -109,12 +109,12 @@ func GetDb(connString string) (*sql.DB, error) {
 // Creates a users table if it doesn't exist yet
 func CreateUsersTable(db *sql.DB) (sql.Result, error) {
 	query := `
-	    CREATE TABLE IF NOT EXISTS users (
-	        id SERIAL PRIMARY KEY,
-	        username TEXT NOT NULL,
-	        password TEXT NOT NULL,
-	        created_at TIMESTAMP
-	    );
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            created_at TIMESTAMP
+        );
     `
 	return db.Exec(query)
 }
